@@ -1,6 +1,6 @@
 #--------- Generic stuff all our Dockerfiles should start with so we get caching ------------
 FROM ubuntu:trusty
-MAINTAINER Tim Sutton<tim@linfiniti.com>
+MAINTAINER Gavin Fleming<gavin@kartoza.com>
 
 RUN  export DEBIAN_FRONTEND=noninteractive
 ENV  DEBIAN_FRONTEND noninteractive
@@ -12,18 +12,20 @@ RUN  dpkg-divert --local --rename --add /sbin/initctl
 # Or comment this line out if you do not with to use caching
 ADD 71-apt-cacher-ng /etc/apt/apt.conf.d/71-apt-cacher-ng
 
-RUN echo "deb http://archive.ubuntu.com/ubuntu trusty main universe" > /etc/apt/sources.list
-#RUN apt-get -y update
+RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-RUN apt-get -y install unzip openjdk-7-jre-headless openjdk-7-jre
-ADD geoserver.zip /tmp/geoserver.zip
-# Next three lines pilfered from 
-# https://ge.dec.wa.gov.au/_/dockers/dpaw_docker/geoserver/Dockerfile
-#RUN wget http://downloads.sourceforge.net/project/geoserver/GeoServer/2.4.1/geoserver-2.4.1-bin.zip -O /tmp/geoserver.zip
-RUN unzip /tmp/geoserver.zip -d /opt && mv -v /opt/geoserver* /opt/geoserver
-ENV GEOSERVER_HOME /opt/geoserver
-
-ENTRYPOINT "/opt/geoserver/bin/startup.sh"
+RUN apt-get -y install default-jre-headless default-jre apache2 libapache2-mod-jk tomcat7
+ADD metacat.tar.gz /tmp
+RUN mkdir /var/metacat
+RUN chown -R tomcat7:tomcat7 /var/metacat
+RUN cp /tmp/metacat.war /var/lib/tomcat7/webapps
 EXPOSE 8080
+
+#uncomment AJP element in <tomcat_home>/conf/server.xml
+
+#CMD service tomcat7 restart  && tail -f /var/lib/tomcat7/logs/catalina.out
+
+#ENTRYPOINT 
+
