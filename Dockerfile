@@ -24,8 +24,14 @@ RUN cp /tmp/metacat.war /var/lib/tomcat7/webapps
 EXPOSE 8080
 
 #uncomment AJP element in <tomcat_home>/conf/server.xml
+#this was the trick that got it workign after hours of pain. On 27 aug 2014 'service tomcat7 start' worked but after an update no longer!
+# http://stackoverflow.com/questions/24265354/tomcat7-in-debianwheezy-docker-instance-fails-to-start
+ADD run_tomcat.sh /root/run_tomcat.sh
+RUN chmod +x /root/run_tomcat.sh
 
-#CMD service tomcat7 restart  && tail -f /var/lib/tomcat7/logs/catalina.out
+CMD ["/root/run_tomcat.sh"]
+
+#ENTRYPOINT service tomcat7 start  && tail -f /var/lib/tomcat7/logs/catalina.out
 
 #ENTRYPOINT 
 
