@@ -16,14 +16,13 @@ RUN apt-get -y update
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
-#RUN apt-get -y install unzip openjdk-7-jdk apache2 libapache2-mod-jk tomcat7 
-RUN apt-get -y install unzip openjdk-6-jre-headless openjdk-6-jre apache2 libapache2-mod-jk tomcat6
+RUN apt-get -y install unzip default-jre-headless default-jre apache2 libapache2-mod-jk tomcat7
 ADD metacat.tar.gz /tmp
 ADD geoserver.zip /tmp/
 RUN mkdir /var/metacat
-RUN chown -R tomcat6:tomcat6 /var/metacat
-RUN cp /tmp/metacat.war /var/lib/tomcat6/webapps
-RUN unzip /tmp/geoserver.zip -d /var/lib/tomcat6/webapps
+RUN chown -R tomcat7:tomcat7 /var/metacat
+RUN cp /tmp/metacat.war /var/lib/tomcat7/webapps
+RUN unzip /tmp/geoserver.zip -d /var/lib/tomcat7/webapps
 #ENV GEOSERVER_HOME /opt/geoserver
 #ENTRYPOINT service tomcat7 start
 EXPOSE 8080
