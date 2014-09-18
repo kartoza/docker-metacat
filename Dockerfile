@@ -5,8 +5,9 @@ MAINTAINER Gavin Fleming<gavin@kartoza.com>
 #docker docs advise against this:
 #RUN  export DEBIAN_FRONTEND=noninteractive
 #ENV  DEBIAN_FRONTEND noninteractive
+#this is not recommended either but at least for the moment allows e.g. tomcat to be start with init.d script. 
 RUN  dpkg-divert --local --rename --add /sbin/initctl
-#RUN  ln -s /bin/true /sbin/initctl
+RUN  ln -s /bin/true /sbin/initctl
 
 # Use local cached debs from host (saves your bandwidth!)
 # Change ip below to that of your apt-cacher-ng host
@@ -24,6 +25,7 @@ ADD metacat.tar.gz /tmp
 ADD geoserver.zip /tmp/
 #restore metacat backup. Must write to /var/metacat
 ADD var_metacat_backup_1Sept2014.tar.gz /
+#we changed the context from knb to metacat:
 RUN mv /var/metacat/.knb /var/metacat/.metacat
 #ADD metacat.properties /var/metacat/.metacat/
 RUN chown -R tomcat7:tomcat7 /var/metacat
@@ -36,13 +38,11 @@ RUN a2enmod jk
 ADD volume/metacat/metacat-site.conf /etc/apache2/sites-available/
 RUN a2dissite 000-default
 RUN a2ensite metacat-site
-#ENV GEOSERVER_HOME /opt/geoserver
 #ENTRYPOINT service tomcat7 start
 EXPOSE 8080
 EXPOSE 80
 ADD volume/metacat/server.xml /var/lib/tomcat7/conf/server.xml
 ADD volume/metacat/catalina.properties /etc/tomcat7/catalina.properties
-#uncomment AJP element in <tomcat_home>/conf/server.xml
 #this was the trick that got it workign after hours of pain. On 27 aug 2014 'service tomcat7 start' worked but after an update no longer!
 # http://stackoverflow.com/questions/24265354/tomcat7-in-debianwheezy-docker-instance-fails-to-start
 ADD run_services.sh /root/run_services.sh
