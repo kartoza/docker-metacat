@@ -2,8 +2,9 @@
 FROM ubuntu:trusty
 MAINTAINER Gavin Fleming<gavin@kartoza.com>
 
-RUN  export DEBIAN_FRONTEND=noninteractive
-ENV  DEBIAN_FRONTEND noninteractive
+#docker docs advise against this:
+#RUN  export DEBIAN_FRONTEND=noninteractive
+#ENV  DEBIAN_FRONTEND noninteractive
 RUN  dpkg-divert --local --rename --add /sbin/initctl
 #RUN  ln -s /bin/true /sbin/initctl
 
@@ -13,27 +14,42 @@ RUN  dpkg-divert --local --rename --add /sbin/initctl
 ADD 71-apt-cacher-ng /etc/apt/apt.conf.d/71-apt-cacher-ng
 
 RUN apt-get -y update
+#RUN hostname saeonmetacat.kartoza.com
 
 #-------------Application Specific Stuff ----------------------------------------------------
 
 RUN apt-get -y install unzip default-jre-headless default-jre apache2 libapache2-mod-jk tomcat7
+RUN echo 'ServerName saeonmetacat.kartoza.com' >> /etc/apache2/apache2.conf
 ADD metacat.tar.gz /tmp
 ADD geoserver.zip /tmp/
-RUN mkdir /var/metacat
+#restore metacat backup. Must write to /var/metacat
+ADD var_metacat_backup_1Sept2014.tar.gz /
+RUN mv /var/metacat/.knb /var/metacat/.metacat
+#ADD metacat.properties /var/metacat/.metacat/
 RUN chown -R tomcat7:tomcat7 /var/metacat
 RUN cp /tmp/metacat.war /var/lib/tomcat7/webapps
 RUN unzip /tmp/geoserver.zip -d /var/lib/tomcat7/webapps
+RUN cp /tmp/debian/jk.conf /etc/apache2/mods-available/
+ADD volume/metacat/workers.properties /etc/apache2/
+RUN a2dismod jk
+RUN a2enmod jk
+ADD volume/metacat/metacat-site.conf /etc/apache2/sites-available/
+RUN a2dissite 000-default
+RUN a2ensite metacat-site
 #ENV GEOSERVER_HOME /opt/geoserver
 #ENTRYPOINT service tomcat7 start
 EXPOSE 8080
-
+EXPOSE 80
+ADD volume/metacat/server.xml /var/lib/tomcat7/conf/server.xml
+ADD volume/metacat/catalina.properties /etc/tomcat7/catalina.properties
 #uncomment AJP element in <tomcat_home>/conf/server.xml
 #this was the trick that got it workign after hours of pain. On 27 aug 2014 'service tomcat7 start' worked but after an update no longer!
 # http://stackoverflow.com/questions/24265354/tomcat7-in-debianwheezy-docker-instance-fails-to-start
-ADD run_tomcat.sh /root/run_tomcat.sh
-RUN chmod +x /root/run_tomcat.sh
+ADD run_services.sh /root/run_services.sh
+RUN chmod +x /root/run_services.sh
 
-CMD ["/root/run_tomcat.sh"]
+#build with this commented out if you want to be able to attach to it later
+CMD ["/root/run_services.sh"]
 
 #ENTRYPOINT service tomcat7 start  && tail -f /var/lib/tomcat7/logs/catalina.out
 
