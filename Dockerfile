@@ -33,6 +33,7 @@ RUN cp /tmp/metacat.war /var/lib/tomcat7/webapps
 RUN unzip /tmp/geoserver.zip -d /var/lib/tomcat7/webapps
 RUN cp /tmp/debian/jk.conf /etc/apache2/mods-available/
 ADD volume/metacat/workers.properties /etc/apache2/
+ADD volume/metacat/context.xml /var/lib/tomcat7/conf/
 RUN a2dismod jk
 RUN a2enmod jk
 ADD volume/metacat/metacat-site.conf /etc/apache2/sites-available/
