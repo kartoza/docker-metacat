@@ -36,6 +36,7 @@ ADD volume/metacat/workers.properties /etc/apache2/
 ADD volume/metacat/context.xml /var/lib/tomcat7/conf/
 RUN a2dismod jk
 RUN a2enmod jk
+RUN a2enmod cgid
 ADD volume/metacat/metacat-site.conf /etc/apache2/sites-available/
 RUN a2dissite 000-default
 RUN a2ensite metacat-site
